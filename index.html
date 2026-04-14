@@ -18,18 +18,42 @@
 </head>
 <body>
     <div id="map"></div>
+    <!-- Add PapaParse to handle CSV files easily -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script>
-        const map = L.map('map').setView([56.1612, 15.5869], 13);
+        // Start the map centered on the world
+        const map = L.map('map').setView([20, 0], 2);
 
         L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
             attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         }).addTo(map);
 
-        L.marker([56.1612, 15.5869]).addTo(map)
-            .bindPopup('Welcome to Karlskrona!')
-            .openPopup();
+        // Load and parse the CSV file
+        Papa.parse("floods.csv", {
+            download: true,
+            header: true,
+            complete: function(results) {
+                const data = results.data;
+                console.log("Loaded data:", data);
+
+                // For each row in the CSV, add a marker to the map
+                data.forEach(row => {
+                    // Check if the row has valid coordinates
+                    if (row.lat && row.long) {
+                        const marker = L.marker([parseFloat(row.lat), parseFloat(row.long)]).addTo(map);
+                        
+                        // Add a popup with the Country and Date
+                        marker.bindPopup(`
+                            <strong>Flood in ${row.Country}</strong><br>
+                            Date: ${row.Began || 'Unknown'}<br>
+                            Cause: ${row.MainCause || 'Not specified'}
+                        `);
+                    }
+                });
+            }
+        });
     </script>
 </body>
 </html>
