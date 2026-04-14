@@ -38,11 +38,18 @@
                 const data = results.data;
                 console.log("Loaded data:", data);
 
-                // For each row in the CSV, add a marker to the map
+                // For each row in the CSV, add a circle marker to the map
                 data.forEach(row => {
                     // Check if the row has valid coordinates
                     if (row.lat && row.long) {
-                        const marker = L.marker([parseFloat(row.lat), parseFloat(row.long)]).addTo(map);
+                        const marker = L.circleMarker([parseFloat(row.lat), parseFloat(row.long)], {
+                            radius: 3,
+                            fillColor: "#3388ff",
+                            color: "#000",
+                            weight: 1,
+                            opacity: 1,
+                            fillOpacity: 0.8
+                        }).addTo(map);
                         
                         // Add a popup with the Country and Date
                         marker.bindPopup(`
