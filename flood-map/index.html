@@ -22,7 +22,7 @@
 
     function safeNum(v){return v===''||v===null?NaN:Number(v)}
 
-    Papa.parse('/floods.csv', {
+    Papa.parse('../floods.csv', {
       download: true,
       header: true,
       skipEmptyLines: true,
