@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sweden Flood Map</title>
+    <!-- Leaflet CSS for map styling -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        #map { height: 100vh; width: 100%; }
+        
+        /* Custom styling for a clean header overlay */
+        .info-box {
+            position: absolute;
+            top: 10px;
+            left: 50px;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            z-index: 1000;
+        }
+        h2 { margin: 0 0 10px 0; color: #003366; }
+        p { margin: 5px 0; color: #555; }
+    </style>
+</head>
+<body>
+
+    <div class="info-box">
+        <h2>Sweden's Flood History</h2>
+        <p>Interactive map showing historical flood data.</p>
+        <p><small>Circles indicate severity and impact.</small></p>
+    </div>
+
+    <div id="map"></div>
+
+    <!-- Leaflet JavaScript library -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // 1. Initialize the map centered on Sweden
+        const map = L.map('map').setView([60.1282, 18.6435], 5);
+
+        // 2. Add a clean map style (basemap)
+        // I chose "CartoDB Positron" because it is a "light" map.
+        // This makes the data markers stand out much better.
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            attribution: '© OpenStreetMap contributors © CARTO'
+        }).addTo(map);
+
+        // 3. Our data points for Sweden
+        const swedenFloods = [
+            { id: 52, lat: 63.1724, lon: 15.9425, date: "1985-09-12", cause: "Heavy rain", severity: 1.0, area: 51410 },
+            { id: 1159, lat: 65.547, lon: 21.4825, date: "1997-07-27", cause: "Heavy rain", severity: 1.0, area: 4247 }
+        ];
+
+        // 4. Add markers (Circles) to the map
+        // I used circles instead of pins because circles can represent "area" or "intensity"
+        swedenFloods.forEach(flood => {
+            // Visual choice: Blue for water/floods, semi-transparent to see overlapping areas
+            L.circle([flood.lat, flood.lon], {
+                color: '#0055ff',      // Border color
+                fillColor: '#3388ff',  // Fill color
+                fillOpacity: 0.5,      // Transparency
+                radius: 10000          // Fixed size for now (10km)
+            })
+            .bindPopup(`
+                <strong>Flood ID: ${flood.id}</strong><br>
+                Date: ${flood.date}<br>
+                Cause: ${flood.cause}<br>
+                Severity: ${flood.severity}
+            `)
+            .addTo(map);
+        });
+    </script>
+</body>
+</html>
