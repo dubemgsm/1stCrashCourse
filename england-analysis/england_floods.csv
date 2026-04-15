@@ -1,0 +1,5 @@
+ID,GlideNumber,Country,OtherCountry,long,lat,Area,Began,Ended,Validation,Dead,Displaced,MainCause,Severity
+485,0,England,0,-2.14882,53.7195,47107.46,1990-12-25,1990-12-28,News,3,0,Heavy rain,1.0
+669,0,England,0,-0.349411,50.9783,15062.72,1992-07-20,1992-07-20,News,0,120,Heavy rain,1.0
+677,0,England,0,-0.827224,52.7319,23847.54,1992-08-09,1992-08-09,News,9,0,Heavy rain,2.0
+708,0,England,0,-0.054612,51.7363,12300.0,1992-10-20,1992-10-21,News,3,0,Heavy rain,1.0

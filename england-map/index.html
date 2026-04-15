@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>England Flood History Map</title>
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        #map { height: 100vh; width: 100%; }
+        .info-box {
+            position: absolute;
+            top: 10px;
+            left: 50px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+            border-left: 5px solid #005a9c;
+        }
+        h2 { margin: 0 0 5px 0; color: #005a9c; }
+        p { margin: 3px 0; color: #333; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+
+    <div class="info-box">
+        <h2>England Flood History</h2>
+        <p>A mapping of historical flood data across England.</p>
+        <p><small>Circles represent flood locations and details.</small></p>
+    </div>
+
+    <div id="map"></div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // 1. Center the map on England
+        const map = L.map('map').setView([52.3555, -1.1743], 6);
+
+        // 2. Choose a clean, professional background (Basemap)
+        // I used CartoDB Voyager because it's soft and easy to read.
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+            attribution: '© OpenStreetMap contributors © CARTO'
+        }).addTo(map);
+
+        // 3. Our England-specific flood data
+        const englandFloods = [
+            { id: 485, lat: 53.7195, lon: -2.14882, date: "1990-12-25", dead: 3, displaced: 0 },
+            { id: 669, lat: 50.9783, lon: -0.349411, date: "1992-07-20", dead: 0, displaced: 120 },
+            { id: 677, lat: 52.7319, lon: -0.827224, date: "1992-08-09", dead: 9, displaced: 0 },
+            { id: 708, lat: 51.7363, lon: -0.054612, date: "1992-10-20", dead: 3, displaced: 0 }
+        ];
+
+        // 4. Place markers on the map
+        englandFloods.forEach(flood => {
+            // Visual choice: Semi-transparent blue circles for a "water" feel.
+            L.circle([flood.lat, flood.lon], {
+                color: '#005a9c',       // Solid blue outline
+                fillColor: '#3498db',   // Lighter blue fill
+                fillOpacity: 0.6,
+                radius: 12000           // 12km radius for visibility
+            })
+            .bindPopup(`
+                <div style="font-family: sans-serif;">
+                    <strong style="color: #005a9c;">Flood ID: ${flood.id}</strong><br>
+                    <strong>Date:</strong> ${flood.date}<br>
+                    <strong>Casualties:</strong> ${flood.dead}<br>
+                    <strong>Displaced:</strong> ${flood.displaced}
+                </div>
+            `)
+            .addTo(map);
+        });
+    </script>
+</body>
+</html>
