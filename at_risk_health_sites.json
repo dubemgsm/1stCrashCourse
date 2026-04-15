@@ -1,0 +1,58 @@
+[
+    {
+        "id": 101,
+        "name": "Local Clinic - Risk Zone",
+        "type": "clinic",
+        "lat": 63.175,
+        "lon": 15.95,
+        "note": "Simulated site 0.5km from Flood 52",
+        "risk_info": [
+            {
+                "flood_id": "52",
+                "distance_km": 0.475
+            }
+        ]
+    },
+    {
+        "id": 102,
+        "name": "Community Pharmacy - Risk Zone",
+        "type": "pharmacy",
+        "lat": 63.18,
+        "lon": 15.96,
+        "note": "Simulated site 1.2km from Flood 52",
+        "risk_info": [
+            {
+                "flood_id": "52",
+                "distance_km": 1.219
+            }
+        ]
+    },
+    {
+        "id": 103,
+        "name": "Northern Health Center - Risk Zone",
+        "type": "hospital",
+        "lat": 65.55,
+        "lon": 21.49,
+        "note": "Simulated site 0.6km from Flood 1159",
+        "risk_info": [
+            {
+                "flood_id": "1159",
+                "distance_km": 0.48
+            }
+        ]
+    },
+    {
+        "id": 104,
+        "name": "Regional Medical Office",
+        "type": "doctors",
+        "lat": 65.6,
+        "lon": 21.55,
+        "note": "Simulated site 6.5km from Flood 1159",
+        "risk_info": [
+            {
+                "flood_id": "1159",
+                "distance_km": 6.661
+            }
+        ]
+    }
+]

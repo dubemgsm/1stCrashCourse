@@ -1,0 +1,9 @@
+[
+  { "id": 1, "name": "Karolinska University Hospital", "city": "Stockholm", "lat": 59.3516, "lon": 18.0345, "type": "University Hospital" },
+  { "id": 2, "name": "Sahlgrenska University Hospital", "city": "Gothenburg", "lat": 57.6837, "lon": 11.9567, "type": "University Hospital" },
+  { "id": 3, "name": "Skåne University Hospital", "city": "Lund", "lat": 55.7093, "lon": 13.1979, "type": "University Hospital" },
+  { "id": 4, "name": "Uppsala University Hospital", "city": "Uppsala", "lat": 59.8519, "lon": 17.6385, "type": "University Hospital" },
+  { "id": 5, "name": "Linköping University Hospital", "city": "Linköping", "lat": 58.4011, "lon": 15.6214, "type": "University Hospital" },
+  { "id": 6, "name": "Norrland University Hospital", "city": "Umeå", "lat": 63.8209, "lon": 20.3015, "type": "University Hospital" },
+  { "id": 7, "name": "Danderyd Hospital", "city": "Stockholm", "lat": 59.3922, "lon": 18.0447, "type": "Community Hospital" }
+]
