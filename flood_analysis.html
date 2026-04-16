@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Flood Analysis</title>
+    <!-- Chart.js and PapaParse libraries from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .card {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        canvas {
+            max-width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <h1>Global Flood Analysis Dashboard</h1>
+    <div class="container">
+        <!-- Card 1: Top 20 Countries -->
+        <div class="card">
+            <h3>Top 20 Countries by Flood Events</h3>
+            <canvas id="countryChart"></canvas>
+        </div>
+        <!-- Card 2: Events per Year -->
+        <div class="card">
+            <h3>Flood Events per Year</h3>
+            <canvas id="yearChart"></canvas>
+        </div>
+        <!-- Card 3: Events by Category -->
+        <div class="card">
+            <h3>Flood Events by Category</h3>
+            <canvas id="categoryChart"></canvas>
+        </div>
+        <!-- Card 4: Total Displaced by Severity -->
+        <div class="card">
+            <h3>Total Displaced by Severity Level</h3>
+            <canvas id="displacedChart"></canvas>
+        </div>
+    </div>
+
+    <script>
+        // Use PapaParse to load the CSV file from your repository
+        Papa.parse("floodarchive_cleaned.csv", {
+            download: true,
+            header: true,
+            complete: function(results) {
+                const data = results.data;
+                processAndRender(data);
+            }
+        });
+
+        function processAndRender(data) {
+            // Remove empty rows if any
+            const cleanData = data.filter(d => d.Country && d.Year);
+
+            // (1) Bar chart: top 20 countries
+            const countries = {};
+            cleanData.forEach(d => {
+                countries[d.Country] = (countries[d.Country] || 0) + 1;
+            });
+            const top20 = Object.entries(countries)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 20);
+
+            new Chart(document.getElementById('countryChart'), {
+                type: 'bar',
+                data: {
+                    labels: top20.map(x => x[0]),
+                    datasets: [{
+                        label: 'Flood Events',
+                        data: top20.map(x => x[1]),
+                        backgroundColor: '#3498db'
+                    }]
+                }
+            });
+
+            // (2) Line chart: events per year
+            const years = {};
+            cleanData.forEach(d => {
+                years[d.Year] = (years[d.Year] || 0) + 1;
+            });
+            const sortedYears = Object.entries(years).sort((a, b) => a[0] - b[0]);
+
+            new Chart(document.getElementById('yearChart'), {
+                type: 'line',
+                data: {
+                    labels: sortedYears.map(x => x[0]),
+                    datasets: [{
+                        label: 'Events per Year',
+                        data: sortedYears.map(x => x[1]),
+                        borderColor: '#e67e22',
+                        fill: false
+                    }]
+                }
+            });
+
+            // (3) Bar chart: events by category
+            const categories = {};
+            cleanData.forEach(d => {
+                const cat = d.categorised_reason || 'Unknown';
+                categories[cat] = (categories[cat] || 0) + 1;
+            });
+
+            new Chart(document.getElementById('categoryChart'), {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(categories),
+                    datasets: [{
+                        label: 'Events by Category',
+                        data: Object.values(categories),
+                        backgroundColor: '#2ecc71'
+                    }]
+                }
+            });
+
+            // (4) Bar chart: total displaced by Severity
+            const severityDisplaced = {};
+            cleanData.forEach(d => {
+                const sev = d.Severity || 'Unknown';
+                const displaced = parseInt(d.Displaced) || 0;
+                severityDisplaced[sev] = (severityDisplaced[sev] || 0) + displaced;
+            });
+
+            new Chart(document.getElementById('displacedChart'), {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(severityDisplaced),
+                    datasets: [{
+                        label: 'Total Displaced',
+                        data: Object.values(severityDisplaced),
+                        backgroundColor: '#9b59b6'
+                    }]
+                }
+            });
+        }
+    </script>
+</body>
+</html>
