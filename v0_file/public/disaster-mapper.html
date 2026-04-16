@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Disaster Data Mapper</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg-primary: #1a1a2e;
+      --bg-secondary: #16213e;
+      --bg-card: #1f2544;
+      --bg-input: #2a2f5b;
+      --text-primary: #f0f0f0;
+      --text-secondary: #a0a0a0;
+      --accent: #e6b450;
+      --accent-hover: #f0c464;
+      --border: #3a3f6b;
+      --severity-low: #22c55e;
+      --severity-medium: #eab308;
+      --severity-high: #f97316;
+      --severity-critical: #ef4444;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    header {
+      background: var(--bg-secondary);
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .logo-icon {
+      width: 32px;
+      height: 32px;
+      background: var(--accent);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .logo h1 {
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+
+    .header-controls {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .btn {
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--bg-input);
+      color: var(--text-primary);
+      cursor: pointer;
+      font-size: 0.875rem;
+      transition: all 0.2s;
+    }
+
+    .btn:hover {
+      background: var(--border);
+    }
+
+    .btn.active {
+      background: var(--accent);
+      color: var(--bg-primary);
+      border-color: var(--accent);
+    }
+
+    .main-content {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .sidebar {
+      width: 320px;
+      background: var(--bg-secondary);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .sidebar.hidden {
+      display: none;
+    }
+
+    .sidebar-section {
+      padding: 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .sidebar-section h3 {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-secondary);
+      margin-bottom: 0.75rem;
+    }
+
+    .dropzone {
+      border: 2px dashed var(--border);
+      border-radius: 8px;
+      padding: 2rem 1rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .dropzone:hover, .dropzone.dragover {
+      border-color: var(--accent);
+      background: rgba(230, 180, 80, 0.1);
+    }
+
+    .dropzone-icon {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .dropzone p {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+
+    .dropzone .highlight {
+      color: var(--accent);
+      font-weight: 500;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+    }
+
+    .stat-card {
+      background: var(--bg-card);
+      border-radius: 8px;
+      padding: 0.75rem;
+    }
+
+    .stat-value {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    .stat-label {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
+
+    .filter-group {
+      margin-bottom: 1rem;
+    }
+
+    .filter-group:last-child {
+      margin-bottom: 0;
+    }
+
+    .filter-group label {
+      display: block;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      margin-bottom: 0.375rem;
+    }
+
+    .filter-group select,
+    .filter-group input {
+      width: 100%;
+      padding: 0.5rem;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--bg-input);
+      color: var(--text-primary);
+      font-size: 0.875rem;
+    }
+
+    .filter-group select:focus,
+    .filter-group input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.375rem;
+      font-size: 0.75rem;
+    }
+
+    .legend-color {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+
+    .map-container {
+      flex: 1;
+      position: relative;
+    }
+
+    #map {
+      width: 100%;
+      height: 100%;
+    }
+
+    .table-container {
+      flex: 1;
+      overflow: auto;
+      background: var(--bg-secondary);
+    }
+
+    .table-container.hidden {
+      display: none;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.875rem;
+    }
+
+    thead {
+      position: sticky;
+      top: 0;
+      background: var(--bg-card);
+      z-index: 10;
+    }
+
+    th, td {
+      padding: 0.75rem 1rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      font-weight: 600;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    th:hover {
+      background: var(--bg-input);
+    }
+
+    th.sorted::after {
+      content: ' ▲';
+      font-size: 0.625rem;
+    }
+
+    th.sorted.desc::after {
+      content: ' ▼';
+    }
+
+    tbody tr {
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    tbody tr:hover {
+      background: var(--bg-card);
+    }
+
+    .severity-badge {
+      display: inline-block;
+      padding: 0.125rem 0.5rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: var(--text-secondary);
+      text-align: center;
+      padding: 2rem;
+    }
+
+    .empty-state-icon {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+      opacity: 0.5;
+    }
+
+    .data-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0.5rem;
+    }
+
+    .data-item {
+      padding: 0.75rem;
+      background: var(--bg-card);
+      border-radius: 8px;
+      margin-bottom: 0.5rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .data-item:hover {
+      background: var(--bg-input);
+    }
+
+    .data-item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.375rem;
+    }
+
+    .data-item-country {
+      font-weight: 500;
+    }
+
+    .data-item-details {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
+
+    .leaflet-popup-content-wrapper {
+      background: var(--bg-card);
+      color: var(--text-primary);
+      border-radius: 8px;
+    }
+
+    .leaflet-popup-tip {
+      background: var(--bg-card);
+    }
+
+    .popup-content h4 {
+      margin-bottom: 0.5rem;
+      color: var(--accent);
+    }
+
+    .popup-content p {
+      margin: 0.25rem 0;
+      font-size: 0.875rem;
+    }
+
+    .popup-content .label {
+      color: var(--text-secondary);
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        width: 100%;
+        max-height: 40vh;
+      }
+
+      .main-content {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo">
+        <div class="logo-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="10" r="3"/>
+            <path d="M12 21.7C17.3 17 20 13 20 10a8 8 0 1 0-16 0c0 3 2.7 7 8 11.7z"/>
+          </svg>
+        </div>
+        <h1>Disaster Data Mapper</h1>
+      </div>
+      <div class="header-controls">
+        <button class="btn active" id="btn-map">Map</button>
+        <button class="btn" id="btn-split">Split</button>
+        <button class="btn" id="btn-table">Table</button>
+      </div>
+    </header>
+
+    <div class="main-content">
+      <aside class="sidebar" id="sidebar">
+        <div class="sidebar-section">
+          <h3>Upload Data</h3>
+          <div class="dropzone" id="dropzone">
+            <div class="dropzone-icon">📂</div>
+            <p>Drag & drop your <span class="highlight">CSV file</span> here</p>
+            <p style="margin-top: 0.5rem; font-size: 0.75rem;">or click to browse</p>
+          </div>
+          <input type="file" id="file-input" accept=".csv,.tsv,.txt" style="display: none;">
+        </div>
+
+        <div class="sidebar-section" id="stats-section" style="display: none;">
+          <h3>Statistics</h3>
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-value" id="stat-events">0</div>
+              <div class="stat-label">Events</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="stat-deaths">0</div>
+              <div class="stat-label">Deaths</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="stat-displaced">0</div>
+              <div class="stat-label">Displaced</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="stat-countries">0</div>
+              <div class="stat-label">Countries</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sidebar-section" id="filter-section" style="display: none;">
+          <h3>Filters</h3>
+          <div class="filter-group">
+            <label>Country</label>
+            <select id="filter-country">
+              <option value="">All Countries</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>Cause</label>
+            <select id="filter-cause">
+              <option value="">All Causes</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>Min Severity</label>
+            <input type="range" id="filter-severity" min="0" max="3" step="0.5" value="0">
+            <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-secondary);">
+              <span>0</span>
+              <span id="severity-value">0</span>
+              <span>3+</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="sidebar-section">
+          <h3>Legend</h3>
+          <div class="legend">
+            <div class="legend-item">
+              <div class="legend-color" style="background: var(--severity-low);"></div>
+              <span>Low (0-1)</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color" style="background: var(--severity-medium);"></div>
+              <span>Medium (1-1.5)</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color" style="background: var(--severity-high);"></div>
+              <span>High (1.5-2)</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color" style="background: var(--severity-critical);"></div>
+              <span>Critical (2+)</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="data-list" id="data-list"></div>
+      </aside>
+
+      <div class="map-container" id="map-container">
+        <div id="map"></div>
+      </div>
+
+      <div class="table-container hidden" id="table-container">
+        <table>
+          <thead id="table-head"></thead>
+          <tbody id="table-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // State
+    let data = [];
+    let filteredData = [];
+    let map;
+    let markers = [];
+    let sortColumn = null;
+    let sortDirection = 'asc';
+    let viewMode = 'map';
+
+    // Initialize map
+    function initMap() {
+      map = L.map('map').setView([0, 20], 2);
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
+        maxZoom: 19
+      }).addTo(map);
+    }
+
+    // Parse CSV
+    function parseCSV(text) {
+      const lines = text.trim().split(/\r?\n/);
+      if (lines.length < 2) return [];
+
+      // Detect delimiter
+      const firstLine = lines[0];
+      let delimiter = ',';
+      if (firstLine.includes('\t')) delimiter = '\t';
+      else if (firstLine.includes(';')) delimiter = ';';
+
+      // Parse headers
+      const headers = parseCSVLine(firstLine, delimiter).map(h => h.trim());
+      
+      // Find column indices
+      const findCol = (names) => {
+        for (const name of names) {
+          const idx = headers.findIndex(h => h.toLowerCase() === name.toLowerCase());
+          if (idx !== -1) return idx;
+        }
+        return -1;
+      };
+
+      const colMap = {
+        id: findCol(['id', 'ID', 'event_id']),
+        glideNumber: findCol(['glidenumber', 'glide_number', 'glide']),
+        country: findCol(['country', 'Country', 'nation']),
+        multiCountry: findCol(['multi_country', 'multicountry']),
+        long: findCol(['long', 'Long', 'longitude', 'Longitude', 'lng', 'Lng', 'lon', 'Lon', 'x']),
+        lat: findCol(['lat', 'Lat', 'latitude', 'Latitude', 'y']),
+        area: findCol(['area', 'Area', 'affected_area']),
+        began: findCol(['began', 'Began', 'start_date', 'begin_date']),
+        ended: findCol(['ended', 'Ended', 'end_date']),
+        validation: findCol(['validation', 'Validation', 'source']),
+        dead: findCol(['dead', 'Dead', 'deaths', 'fatalities']),
+        displaced: findCol(['displaced', 'Displaced', 'affected']),
+        mainCause: findCol(['maincause', 'main_cause', 'cause', 'Cause']),
+        severity: findCol(['severity', 'Severity']),
+        categorisedCause: findCol(['categorised_cause', 'categorizedcause', 'category'])
+      };
+
+      const results = [];
+      
+      for (let i = 1; i < lines.length; i++) {
+        if (!lines[i].trim()) continue;
+        
+        const values = parseCSVLine(lines[i], delimiter);
+        
+        const lat = parseFloat(values[colMap.lat]) || 0;
+        const long = parseFloat(values[colMap.long]) || 0;
+        
+        // Skip if no valid coordinates
+        if (lat === 0 && long === 0) continue;
+        if (lat < -90 || lat > 90 || long < -180 || long > 180) continue;
+
+        results.push({
+          id: values[colMap.id] || String(i),
+          glideNumber: values[colMap.glideNumber] || '',
+          country: values[colMap.country] || 'Unknown',
+          multiCountry: values[colMap.multiCountry] || '',
+          long: long,
+          lat: lat,
+          area: parseFloat(values[colMap.area]) || 0,
+          began: values[colMap.began] || '',
+          ended: values[colMap.ended] || '',
+          validation: values[colMap.validation] || '',
+          dead: parseInt(values[colMap.dead]) || 0,
+          displaced: parseInt(values[colMap.displaced]) || 0,
+          mainCause: values[colMap.mainCause] || 'Unknown',
+          severity: parseFloat(values[colMap.severity]) || 0,
+          categorisedCause: values[colMap.categorisedCause] || ''
+        });
+      }
+
+      return results;
+    }
+
+    function parseCSVLine(line, delimiter) {
+      const result = [];
+      let current = '';
+      let inQuotes = false;
+
+      for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+        
+        if (char === '"') {
+          if (inQuotes && line[i + 1] === '"') {
+            current += '"';
+            i++;
+          } else {
+            inQuotes = !inQuotes;
+          }
+        } else if (char === delimiter && !inQuotes) {
+          result.push(current.trim());
+          current = '';
+        } else {
+          current += char;
+        }
+      }
+      
+      result.push(current.trim());
+      return result;
+    }
+
+    // Get severity color
+    function getSeverityColor(severity) {
+      if (severity >= 2) return '#ef4444';
+      if (severity >= 1.5) return '#f97316';
+      if (severity >= 1) return '#eab308';
+      return '#22c55e';
+    }
+
+    // Update markers
+    function updateMarkers() {
+      markers.forEach(m => map.removeLayer(m));
+      markers = [];
+
+      filteredData.forEach(item => {
+        const color = getSeverityColor(item.severity);
+        
+        const marker = L.circleMarker([item.lat, item.long], {
+          radius: Math.min(Math.max(6, Math.log(item.dead + 1) * 2), 20),
+          fillColor: color,
+          color: '#fff',
+          weight: 1,
+          opacity: 0.8,
+          fillOpacity: 0.7
+        }).addTo(map);
+
+        marker.bindPopup(`
+          <div class="popup-content">
+            <h4>${item.country}</h4>
+            <p><span class="label">Cause:</span> ${item.mainCause}</p>
+            <p><span class="label">Severity:</span> ${item.severity}</p>
+            <p><span class="label">Deaths:</span> ${item.dead.toLocaleString()}</p>
+            <p><span class="label">Displaced:</span> ${item.displaced.toLocaleString()}</p>
+            <p><span class="label">Area:</span> ${item.area.toLocaleString()} km²</p>
+            ${item.began ? `<p><span class="label">Period:</span> ${item.began} - ${item.ended || 'ongoing'}</p>` : ''}
+          </div>
+        `);
+
+        markers.push(marker);
+      });
+
+      if (filteredData.length > 0) {
+        const bounds = L.latLngBounds(filteredData.map(d => [d.lat, d.long]));
+        map.fitBounds(bounds, { padding: [50, 50] });
+      }
+    }
+
+    // Update stats
+    function updateStats() {
+      const totalDeaths = filteredData.reduce((sum, d) => sum + d.dead, 0);
+      const totalDisplaced = filteredData.reduce((sum, d) => sum + d.displaced, 0);
+      const countries = new Set(filteredData.map(d => d.country)).size;
+
+      document.getElementById('stat-events').textContent = filteredData.length.toLocaleString();
+      document.getElementById('stat-deaths').textContent = formatNumber(totalDeaths);
+      document.getElementById('stat-displaced').textContent = formatNumber(totalDisplaced);
+      document.getElementById('stat-countries').textContent = countries;
+    }
+
+    function formatNumber(num) {
+      if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+      if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+      return num.toString();
+    }
+
+    // Update filters
+    function updateFilters() {
+      const countries = [...new Set(data.map(d => d.country))].sort();
+      const causes = [...new Set(data.map(d => d.mainCause || d.categorisedCause).filter(Boolean))].sort();
+
+      const countrySelect = document.getElementById('filter-country');
+      countrySelect.innerHTML = '<option value="">All Countries</option>';
+      countries.forEach(c => {
+        countrySelect.innerHTML += `<option value="${c}">${c}</option>`;
+      });
+
+      const causeSelect = document.getElementById('filter-cause');
+      causeSelect.innerHTML = '<option value="">All Causes</option>';
+      causes.forEach(c => {
+        causeSelect.innerHTML += `<option value="${c}">${c}</option>`;
+      });
+    }
+
+    // Apply filters
+    function applyFilters() {
+      const country = document.getElementById('filter-country').value;
+      const cause = document.getElementById('filter-cause').value;
+      const minSeverity = parseFloat(document.getElementById('filter-severity').value);
+
+      filteredData = data.filter(d => {
+        if (country && d.country !== country) return false;
+        if (cause && d.mainCause !== cause && d.categorisedCause !== cause) return false;
+        if (d.severity < minSeverity) return false;
+        return true;
+      });
+
+      updateMarkers();
+      updateStats();
+      updateTable();
+      updateDataList();
+    }
+
+    // Update table
+    function updateTable() {
+      const columns = [
+        { key: 'country', label: 'Country' },
+        { key: 'mainCause', label: 'Cause' },
+        { key: 'severity', label: 'Severity' },
+        { key: 'dead', label: 'Deaths' },
+        { key: 'displaced', label: 'Displaced' },
+        { key: 'area', label: 'Area (km²)' }
+      ];
+
+      const thead = document.getElementById('table-head');
+      thead.innerHTML = '<tr>' + columns.map(col => 
+        `<th data-col="${col.key}" class="${sortColumn === col.key ? 'sorted' + (sortDirection === 'desc' ? ' desc' : '') : ''}">${col.label}</th>`
+      ).join('') + '</tr>';
+
+      const sortedData = [...filteredData].sort((a, b) => {
+        if (!sortColumn) return 0;
+        let aVal = a[sortColumn];
+        let bVal = b[sortColumn];
+        if (typeof aVal === 'string') aVal = aVal.toLowerCase();
+        if (typeof bVal === 'string') bVal = bVal.toLowerCase();
+        if (aVal < bVal) return sortDirection === 'asc' ? -1 : 1;
+        if (aVal > bVal) return sortDirection === 'asc' ? 1 : -1;
+        return 0;
+      });
+
+      const tbody = document.getElementById('table-body');
+      tbody.innerHTML = sortedData.map(d => `
+        <tr data-lat="${d.lat}" data-long="${d.long}">
+          <td>${d.country}</td>
+          <td>${d.mainCause}</td>
+          <td><span class="severity-badge" style="background: ${getSeverityColor(d.severity)}20; color: ${getSeverityColor(d.severity)}">${d.severity}</span></td>
+          <td>${d.dead.toLocaleString()}</td>
+          <td>${d.displaced.toLocaleString()}</td>
+          <td>${d.area.toLocaleString()}</td>
+        </tr>
+      `).join('');
+    }
+
+    // Update data list
+    function updateDataList() {
+      const list = document.getElementById('data-list');
+      list.innerHTML = filteredData.slice(0, 50).map(d => `
+        <div class="data-item" data-lat="${d.lat}" data-long="${d.long}">
+          <div class="data-item-header">
+            <span class="data-item-country">${d.country}</span>
+            <span class="severity-badge" style="background: ${getSeverityColor(d.severity)}20; color: ${getSeverityColor(d.severity)}">${d.severity}</span>
+          </div>
+          <div class="data-item-details">
+            ${d.mainCause} • ${d.dead.toLocaleString()} deaths
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // View mode handlers
+    function setViewMode(mode) {
+      viewMode = mode;
+      
+      document.querySelectorAll('.header-controls .btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('btn-' + mode).classList.add('active');
+
+      const sidebar = document.getElementById('sidebar');
+      const mapContainer = document.getElementById('map-container');
+      const tableContainer = document.getElementById('table-container');
+
+      switch (mode) {
+        case 'map':
+          sidebar.classList.remove('hidden');
+          mapContainer.style.display = 'block';
+          tableContainer.classList.add('hidden');
+          break;
+        case 'split':
+          sidebar.classList.add('hidden');
+          mapContainer.style.display = 'block';
+          mapContainer.style.flex = '1';
+          tableContainer.classList.remove('hidden');
+          tableContainer.style.flex = '1';
+          break;
+        case 'table':
+          sidebar.classList.remove('hidden');
+          mapContainer.style.display = 'none';
+          tableContainer.classList.remove('hidden');
+          tableContainer.style.flex = '1';
+          break;
+      }
+
+      setTimeout(() => map.invalidateSize(), 100);
+    }
+
+    // Handle file
+    function handleFile(file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        data = parseCSV(e.target.result);
+        filteredData = [...data];
+        
+        if (data.length > 0) {
+          document.getElementById('stats-section').style.display = 'block';
+          document.getElementById('filter-section').style.display = 'block';
+          
+          updateFilters();
+          updateStats();
+          updateMarkers();
+          updateTable();
+          updateDataList();
+        } else {
+          alert('No valid data found. Make sure your CSV has lat/long columns.');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    // Event listeners
+    document.addEventListener('DOMContentLoaded', () => {
+      initMap();
+
+      const dropzone = document.getElementById('dropzone');
+      const fileInput = document.getElementById('file-input');
+
+      dropzone.addEventListener('click', () => fileInput.click());
+      
+      dropzone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropzone.classList.add('dragover');
+      });
+
+      dropzone.addEventListener('dragleave', () => {
+        dropzone.classList.remove('dragover');
+      });
+
+      dropzone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropzone.classList.remove('dragover');
+        if (e.dataTransfer.files.length) {
+          handleFile(e.dataTransfer.files[0]);
+        }
+      });
+
+      fileInput.addEventListener('change', (e) => {
+        if (e.target.files.length) {
+          handleFile(e.target.files[0]);
+        }
+      });
+
+      // Filter listeners
+      document.getElementById('filter-country').addEventListener('change', applyFilters);
+      document.getElementById('filter-cause').addEventListener('change', applyFilters);
+      document.getElementById('filter-severity').addEventListener('input', (e) => {
+        document.getElementById('severity-value').textContent = e.target.value;
+        applyFilters();
+      });
+
+      // View mode buttons
+      document.getElementById('btn-map').addEventListener('click', () => setViewMode('map'));
+      document.getElementById('btn-split').addEventListener('click', () => setViewMode('split'));
+      document.getElementById('btn-table').addEventListener('click', () => setViewMode('table'));
+
+      // Table sorting
+      document.getElementById('table-head').addEventListener('click', (e) => {
+        const th = e.target.closest('th');
+        if (!th) return;
+        
+        const col = th.dataset.col;
+        if (sortColumn === col) {
+          sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+          sortColumn = col;
+          sortDirection = 'asc';
+        }
+        updateTable();
+      });
+
+      // Click to zoom
+      document.addEventListener('click', (e) => {
+        const item = e.target.closest('.data-item, tbody tr');
+        if (item && item.dataset.lat) {
+          map.setView([parseFloat(item.dataset.lat), parseFloat(item.dataset.long)], 8);
+          if (viewMode === 'table') {
+            setViewMode('map');
+          }
+        }
+      });
+    });
+  </script>
+</body>
+</html>
