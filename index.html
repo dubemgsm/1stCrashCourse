@@ -3,64 +3,275 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Karlskrona Map</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <title>Flood Risk & Health Site Analysis</title>
     <style>
-        body {
-            margin: 0;
-            padding: 0;
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary: #64748b;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
         }
-        #map {
-            height: 100vh;
-            width: 100vw;
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            line-height: 1.5;
+        }
+
+        header {
+            background: white;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        nav {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text);
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+
+        main {
+            max-width: 1100px;
+            margin: 3rem auto;
+            padding: 0 2rem;
+        }
+
+        .hero {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .hero h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: #0f172a;
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            color: var(--text-muted);
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 4rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+        }
+
+        .card h3 {
+            margin-top: 0;
+            margin-bottom: 0.75rem;
+            color: #0f172a;
+        }
+
+        .card p {
+            color: var(--text-muted);
+            font-size: 0.925rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .btn {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.875rem;
+            transition: background 0.2s;
+        }
+
+        .btn:hover {
+            background: var(--primary-dark);
+        }
+
+        .dataset-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 0.75rem;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border: 1px solid var(--border);
+        }
+
+        .dataset-table th, .dataset-table td {
+            text-align: left;
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .dataset-table th {
+            background: #f1f5f9;
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: var(--secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
+        }
+
+        .dataset-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            background: #e2e8f0;
+            color: #475569;
+        }
+
+        footer {
+            text-align: center;
+            padding: 4rem 0;
+            color: var(--text-muted);
+            font-size: 0.875rem;
         }
     </style>
 </head>
 <body>
-    <div id="map"></div>
-    <!-- Add PapaParse to handle CSV files easily -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-    <script>
-        // Start the map centered on the world
-        const map = L.map('map').setView([20, 0], 2);
 
-        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-        }).addTo(map);
+<header>
+    <nav>
+        <a href="#" class="logo">FloodHealth Analysis</a>
+        <div class="nav-links">
+            <a href="flood-map/index.html">Maps</a>
+            <a href="flood_analysis.html">Charts</a>
+            <a href="v0_file/public/disaster-mapper.html">CSV Upload App</a>
+        </div>
+    </nav>
+</header>
 
-        // Load and parse the CSV file
-        Papa.parse("floods.csv", {
-            download: true,
-            header: true,
-            complete: function(results) {
-                const data = results.data;
-                console.log("Loaded data:", data);
+<main>
+    <section class="hero">
+        <h1>Global Flood Impact on Health Infrastructure</h1>
+        <p>Analyzing historical flood data alongside critical healthcare facilities to identify regions at risk and improve disaster response readiness.</p>
+    </section>
 
-                // For each row in the CSV, add a circle marker to the map
-                data.forEach(row => {
-                    // Check if the row has valid coordinates
-                    if (row.lat && row.long) {
-                        const marker = L.circleMarker([parseFloat(row.lat), parseFloat(row.long)], {
-                            radius: 3,
-                            fillColor: "#3388ff",
-                            color: "#000",
-                            weight: 1,
-                            opacity: 1,
-                            fillOpacity: 0.8
-                        }).addTo(map);
-                        
-                        // Add a popup with the Country and Date
-                        marker.bindPopup(`
-                            <strong>Flood in ${row.Country}</strong><br>
-                            Date: ${row.Began || 'Unknown'}<br>
-                            Cause: ${row.MainCause || 'Not specified'}
-                        `);
-                    }
-                });
-            }
-        });
-    </script>
+    <h2 class="section-title">Analysis Tools</h2>
+    <div class="grid">
+        <div class="card">
+            <h3>Interactive Global Map</h3>
+            <p>Explore historical flood events worldwide. Filter by severity, cause, and date to see the spatial distribution of disasters.</p>
+            <a href="flood-map/index.html" class="btn">Launch Map</a>
+        </div>
+        <div class="card">
+            <h3>Visual Trends & Charts</h3>
+            <p>Data-driven insights into flood frequency and severity over time. Analyze which regions are most frequently impacted by torrential rain and other factors.</p>
+            <a href="flood_analysis.html" class="btn">View Charts</a>
+        </div>
+        <div class="card">
+            <h3>Custom Data Mapper</h3>
+            <p>A specialized tool to upload your own CSV data and instantly visualize it on a geographic interface for custom analysis.</p>
+            <a href="v0_file/public/disaster-mapper.html" class="btn">Open App</a>
+        </div>
+    </div>
+
+    <h2 class="section-title">Datasets & Sources</h2>
+    <table class="dataset-table">
+        <thead>
+            <tr>
+                <th>Dataset Name</th>
+                <th>Source</th>
+                <th>Format</th>
+                <th>Date Retrieved</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Global Flood Archive</td>
+                <td>Dartmouth Flood Observatory (DFO)</td>
+                <td><span class="badge">CSV</span></td>
+                <td>April 16, 2026</td>
+            </tr>
+            <tr>
+                <td>Swedish Health Sites</td>
+                <td>OpenStreetMap (OSM) via Overpass API</td>
+                <td><span class="badge">JSON</span></td>
+                <td>April 15, 2026</td>
+            </tr>
+            <tr>
+                <td>Regional Flood Records</td>
+                <td>Copernicus / National Disaster Databases</td>
+                <td><span class="badge">CSV</span></td>
+                <td>April 15, 2026</td>
+            </tr>
+            <tr>
+                <td>Risk Analysis Output</td>
+                <td>Calculated (Flood-to-Health Proximity)</td>
+                <td><span class="badge">JSON</span></td>
+                <td>April 16, 2026</td>
+            </tr>
+        </tbody>
+    </table>
+</main>
+
+<footer>
+    &copy; 2026 FloodHealth Project Analysis. Developed for data transparency and disaster resilience.
+</footer>
+
 </body>
 </html>
