@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flood Risk & Health Site Analysis</title>
+    <title>Flood Risk & Health Site Analysis Hub</title>
     <style>
         :root {
             --primary: #2563eb;
@@ -14,6 +14,7 @@
             --text: #1e293b;
             --text-muted: #64748b;
             --border: #e2e8f0;
+            --accent: #3b82f6;
         }
 
         body {
@@ -29,11 +30,11 @@
             border-bottom: 1px solid var(--border);
             position: sticky;
             top: 0;
-            z-index: 50;
+            z-index: 100;
         }
 
         nav {
-            max-width: 1100px;
+            max-width: 1200px;
             margin: 0 auto;
             padding: 1rem 2rem;
             display: flex;
@@ -46,6 +47,9 @@
             font-size: 1.25rem;
             color: var(--primary);
             text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
         .nav-links {
@@ -57,6 +61,7 @@
             text-decoration: none;
             color: var(--text);
             font-weight: 500;
+            font-size: 0.9rem;
             transition: color 0.2s;
         }
 
@@ -65,7 +70,7 @@
         }
 
         main {
-            max-width: 1100px;
+            max-width: 1200px;
             margin: 3rem auto;
             padding: 0 2rem;
         }
@@ -73,76 +78,108 @@
         .hero {
             text-align: center;
             margin-bottom: 4rem;
+            padding: 2rem 0;
         }
 
         .hero h1 {
-            font-size: 2.5rem;
+            font-size: 3rem;
             margin-bottom: 1rem;
             color: #0f172a;
+            letter-spacing: -0.025em;
         }
 
         .hero p {
             font-size: 1.25rem;
             color: var(--text-muted);
-            max-width: 700px;
+            max-width: 800px;
             margin: 0 auto;
         }
 
-        .section-title {
-            font-size: 1.5rem;
-            margin-bottom: 1.5rem;
+        .section-header {
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 0.5rem;
+            margin-bottom: 2rem;
+            margin-top: 4rem;
             display: flex;
-            align-items: center;
-            gap: 0.5rem;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .section-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: #0f172a;
         }
 
         .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
             gap: 2rem;
-            margin-bottom: 4rem;
         }
 
         .card {
             background: var(--card-bg);
             border: 1px solid var(--border);
-            border-radius: 0.75rem;
-            padding: 1.5rem;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            transition: transform 0.2s, box-shadow 0.2s;
+            border-radius: 1rem;
+            padding: 2rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
         }
 
         .card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+            border-color: var(--accent);
         }
 
         .card h3 {
             margin-top: 0;
-            margin-bottom: 0.75rem;
+            margin-bottom: 1rem;
             color: #0f172a;
+            font-size: 1.25rem;
         }
 
         .card p {
             color: var(--text-muted);
-            font-size: 0.925rem;
-            margin-bottom: 1.5rem;
+            font-size: 0.95rem;
+            margin-bottom: 2rem;
+            flex-grow: 1;
         }
 
         .btn {
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
             background: var(--primary);
             color: white;
-            padding: 0.5rem 1rem;
+            padding: 0.75rem 1.5rem;
             border-radius: 0.5rem;
             text-decoration: none;
-            font-weight: 500;
+            font-weight: 600;
             font-size: 0.875rem;
             transition: background 0.2s;
+            gap: 0.5rem;
         }
 
         .btn:hover {
             background: var(--primary-dark);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text);
+        }
+
+        .btn-outline:hover {
+            background: #f1f5f9;
+            border-color: var(--secondary);
+        }
+
+        .metadata-section {
+            margin-top: 4rem;
         }
 
         .dataset-table {
@@ -151,44 +188,50 @@
             background: white;
             border-radius: 0.75rem;
             overflow: hidden;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             border: 1px solid var(--border);
         }
 
         .dataset-table th, .dataset-table td {
             text-align: left;
-            padding: 1rem;
+            padding: 1.25rem;
             border-bottom: 1px solid var(--border);
         }
 
         .dataset-table th {
-            background: #f1f5f9;
+            background: #f8fafc;
             font-weight: 600;
-            font-size: 0.875rem;
+            font-size: 0.8rem;
             color: var(--secondary);
             text-transform: uppercase;
-            letter-spacing: 0.025em;
-        }
-
-        .dataset-table tr:last-child td {
-            border-bottom: none;
+            letter-spacing: 0.05em;
         }
 
         .badge {
             display: inline-block;
-            padding: 0.25rem 0.5rem;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            background: #e2e8f0;
-            color: #475569;
+            padding: 0.2rem 0.6rem;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            background: #eff6ff;
+            color: #1e40af;
+            border: 1px solid #dbeafe;
         }
 
         footer {
+            background: #0f172a;
+            color: #94a3b8;
             text-align: center;
-            padding: 4rem 0;
-            color: var(--text-muted);
-            font-size: 0.875rem;
+            padding: 4rem 2rem;
+            margin-top: 6rem;
+        }
+
+        .tag {
+            font-size: 0.75rem;
+            color: var(--primary);
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+            display: block;
         }
     </style>
 </head>
@@ -196,72 +239,101 @@
 
 <header>
     <nav>
-        <a href="#" class="logo">FloodHealth Analysis</a>
+        <a href="#" class="logo">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+            FloodHealth Hub
+        </a>
         <div class="nav-links">
-            <a href="flood-map/index.html">Maps</a>
+            <a href="#global">Global Maps</a>
+            <a href="#regional">Regional Analysis</a>
             <a href="flood_analysis.html">Charts</a>
-            <a href="v0_file/public/disaster-mapper.html">CSV Upload App</a>
+            <a href="v0_file/public/disaster-mapper.html">Upload App</a>
         </div>
     </nav>
 </header>
 
 <main>
     <section class="hero">
-        <h1>Global Flood Impact on Health Infrastructure</h1>
-        <p>Analyzing historical flood data alongside critical healthcare facilities to identify regions at risk and improve disaster response readiness.</p>
+        <h1>Disaster Resilience Portal</h1>
+        <p>Mapping the intersection of global flood disasters and critical healthcare infrastructure to empower better emergency response.</p>
     </section>
 
-    <h2 class="section-title">Analysis Tools</h2>
+    <div class="section-header" id="global">
+        <h2>Primary Analysis Tools</h2>
+    </div>
     <div class="grid">
         <div class="card">
-            <h3>Interactive Global Map</h3>
-            <p>Explore historical flood events worldwide. Filter by severity, cause, and date to see the spatial distribution of disasters.</p>
-            <a href="flood-map/index.html" class="btn">Launch Map</a>
+            <span class="tag">Interactive Visualizer</span>
+            <h3>Global Flood Map</h3>
+            <p>Comprehensive visualization of historical flood events from 1985 to present. Filter by cause, severity, and displacement metrics.</p>
+            <a href="flood-map/index.html" class="btn">Open Global Map</a>
         </div>
         <div class="card">
-            <h3>Visual Trends & Charts</h3>
-            <p>Data-driven insights into flood frequency and severity over time. Analyze which regions are most frequently impacted by torrential rain and other factors.</p>
-            <a href="flood_analysis.html" class="btn">View Charts</a>
+            <span class="tag">Data Insights</span>
+            <h3>Trend Analysis Dashboard</h3>
+            <p>Advanced charting of flood frequency and impact. View how disaster patterns have evolved over the last four decades.</p>
+            <a href="flood_analysis.html" class="btn">View Statistics</a>
         </div>
         <div class="card">
-            <h3>Custom Data Mapper</h3>
-            <p>A specialized tool to upload your own CSV data and instantly visualize it on a geographic interface for custom analysis.</p>
-            <a href="v0_file/public/disaster-mapper.html" class="btn">Open App</a>
+            <span class="tag">Custom Tools</span>
+            <h3>Disaster Mapper App</h3>
+            <p>A web application built to allow users to upload their own disaster CSV files for immediate geographic visualization.</p>
+            <a href="v0_file/public/disaster-mapper.html" class="btn">Launch Web App</a>
         </div>
     </div>
 
-    <h2 class="section-title">Datasets & Sources</h2>
+    <div class="section-header" id="regional">
+        <h2>Regional Deep Dives</h2>
+    </div>
+    <div class="grid">
+        <div class="card">
+            <span class="tag">Sweden</span>
+            <h3>Sweden: Health Site Risk</h3>
+            <p>Detailed analysis of healthcare facilities in Sweden located in flood-prone areas. Includes hospital proximity to historical flood zones.</p>
+            <a href="sweden-map/index.html" class="btn btn-outline">Sweden Health Map</a>
+        </div>
+        <div class="card">
+            <span class="tag">Sweden</span>
+            <h3>Sweden: Flood History</h3>
+            <p>Specific focus on the geographic distribution of significant flood events recorded within Swedish territory.</p>
+            <a href="sweden-floods-map/index.html" class="btn btn-outline">Sweden Flood Map</a>
+        </div>
+        <div class="card">
+            <span class="tag">United Kingdom</span>
+            <h3>England: Flood Analysis</h3>
+            <p>Mapping and analysis of historical flood data specific to England and surrounding UK regions.</p>
+            <a href="england-map/index.html" class="btn btn-outline">England Map</a>
+        </div>
+    </div>
+
+    <div class="section-header">
+        <h2>Dataset Metadata</h2>
+    </div>
     <table class="dataset-table">
         <thead>
             <tr>
-                <th>Dataset Name</th>
+                <th>Dataset</th>
                 <th>Source</th>
                 <th>Format</th>
-                <th>Date Retrieved</th>
+                <th>Last Updated</th>
             </tr>
         </thead>
         <tbody>
             <tr>
-                <td>Global Flood Archive</td>
-                <td>Dartmouth Flood Observatory (DFO)</td>
+                <td><strong>Global Flood Archive</strong></td>
+                <td>Dartmouth Flood Observatory</td>
                 <td><span class="badge">CSV</span></td>
                 <td>April 16, 2026</td>
             </tr>
             <tr>
-                <td>Swedish Health Sites</td>
-                <td>OpenStreetMap (OSM) via Overpass API</td>
+                <td><strong>Healthcare Facilities</strong></td>
+                <td>OpenStreetMap / Overpass</td>
                 <td><span class="badge">JSON</span></td>
                 <td>April 15, 2026</td>
             </tr>
             <tr>
-                <td>Regional Flood Records</td>
-                <td>Copernicus / National Disaster Databases</td>
-                <td><span class="badge">CSV</span></td>
-                <td>April 15, 2026</td>
-            </tr>
-            <tr>
-                <td>Risk Analysis Output</td>
-                <td>Calculated (Flood-to-Health Proximity)</td>
+                <td><strong>Risk Proximity Data</strong></td>
+                <td>Custom Analysis Output</td>
                 <td><span class="badge">JSON</span></td>
                 <td>April 16, 2026</td>
             </tr>
@@ -270,7 +342,8 @@
 </main>
 
 <footer>
-    &copy; 2026 FloodHealth Project Analysis. Developed for data transparency and disaster resilience.
+    <p>&copy; 2026 FloodHealth Analysis Project</p>
+    <p style="font-size: 0.8rem; margin-top: 1rem; opacity: 0.6;">Data provided for research and informational purposes.</p>
 </footer>
 
 </body>
