@@ -5,7 +5,43 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Global Flood Events</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <style>html,body,#map{height:100%;margin:0;padding:0}#map{height:95vh}</style>
+  <style>
+    html, body, #map { height: 100%; margin: 0; padding: 0; }
+    #map { height: 95vh; }
+    .legend {
+      background: white;
+      padding: 10px;
+      line-height: 18px;
+      color: #333;
+      border: 2px solid rgba(0,0,0,0.2);
+      border-radius: 5px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.2);
+    }
+    .legend h4 {
+      margin: 0 0 5px;
+      font-size: 14px;
+    }
+    .legend i {
+      width: 10px;
+      height: 10px;
+      float: left;
+      margin-right: 8px;
+      opacity: 0.7;
+      border-radius: 50%;
+      background: #1f78b4;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+    .dot {
+      background: #1f78b4;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 10px;
+    }
+  </style>
 </head>
 <body>
   <h3 style="margin:6px">Global flood events (from floods.csv)</h3>
@@ -15,12 +51,24 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
   <script>
     const map = L.map('map').setView([20,0], 2);
-    var tileUrl = 'https://' + '{s}' + '.tile.openstreetmap.org/' + '{z}' + '/' + '{x}' + '/' + '{y}' + '.png';
+    var tileUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
     L.tileLayer(tileUrl,{
       attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
 
     function safeNum(v){return v===''||v===null?NaN:Number(v)}
+
+    // Add Legend
+    var legend = L.control({position: 'bottomright'});
+    legend.onAdd = function (map) {
+      var div = L.DomUtil.create('div', 'legend');
+      div.innerHTML = '<h4>Flood Severity</h4>' +
+        '<div class="legend-item"><span class="dot" style="width:6px; height:6px;"></span> Severity 1 (Low)</div>' +
+        '<div class="legend-item"><span class="dot" style="width:10px; height:10px;"></span> Severity 2 (Medium)</div>' +
+        '<div class="legend-item"><span class="dot" style="width:14px; height:14px;"></span> Severity 3 (High)</div>';
+      return div;
+    };
+    legend.addTo(map);
 
     Papa.parse('../floods.csv', {
       download: true,
@@ -32,16 +80,26 @@
           var lat = safeNum(r.lat || r.Lat || r.latitude || r.lat);
           if (!isNaN(lat) && !isNaN(lon)){
             var severity = safeNum(r.Severity) || safeNum(r.severity) || 1;
-            var radius = Math.max(4, Math.min(20, severity*6));
-            var marker = L.circleMarker([lat, lon], {radius: radius, color:'#1f78b4', fillOpacity:0.6}).addTo(map);
-            var popup = '<b>' + (r.Country || r.country || '') + '</b><br/>' + (r.Began||r.began||'') + ' to ' + (r.Ended||r.ended||'') + '<br/>Cause: ' + (r.MainCause||r.maincause||'') + '<br/>Deaths: ' + (r.Dead||r.dead||0);
+            // Reduced size calculation: Sev 1 -> 3px, Sev 2 -> 5px, Sev 3 -> 7px
+            var radius = (severity * 2) + 1;
+            var marker = L.circleMarker([lat, lon], {
+                radius: radius, 
+                color: '#1f78b4', 
+                weight: 1,
+                fillOpacity: 0.6
+            }).addTo(map);
+            
+            var popup = '<b>' + (r.Country || r.country || '') + '</b><br/>' + 
+                        'Date: ' + (r.Began||r.began||'') + ' to ' + (r.Ended||r.ended||'') + '<br/>' +
+                        'Cause: ' + (r.MainCause||r.maincause||'') + '<br/>' +
+                        'Severity: ' + severity + '<br/>' +
+                        'Deaths: ' + (r.Dead||r.dead||0);
             marker.bindPopup(popup);
           }
         });
       },
       error: function(err){
         console.error('Failed to load CSV', err);
-        alert('Failed to load floods.csv: '+err);
       }
     });
   </script>
